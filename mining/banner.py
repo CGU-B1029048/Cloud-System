@@ -1,4 +1,5 @@
 from pyfiglet import Figlet
+from slant import solve_slant
 import sys
 import random
 import subprocess
@@ -58,44 +59,47 @@ def solve_and_submit(payer):
     # process = subprocess.Popen(['figlet', '-f', 'banner', equation], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
     while True:
         process = subprocess.Popen(['./app_mining', payer], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-        output = []
         try:
             while True:
-                line = process.stdout.readline()
-                if line.strip():
-                    output.append(line)
-                    print(line, end='')
-                else:
-                    if 'Correct' in output:
-                        print('continue')
-                        output = []
-                        continue
+                output = []
+                while True:
+                    line = process.stdout.readline()
+                    if line.strip():
+                        output.append(line)
+                        print(line, end='')
                     else:
                         break
-        # print(f'lines output, output.size:{len(output)}\n{output}')
-            if 'Correct' in output:
-                print('continue')
-                continue
-
-            if '#' in ''.join(output):
-                ans = solve_banner(output)
-                process.stdin.write(f'{ans}\n')
-                process.stdin.flush()
-                cnt = 0
-                while True:
-                    result = process.stdout.readline()
-                    print(f"cnt:{cnt},process output: {result}", end='')
-                    if cnt > 0:
-                        break
-                    if not result.strip():
-                        cnt+=1
-                process.kill()
-                process.wait()
-            else:
-                print("Restarting process...")
-                process.kill()
-                process.wait()
-                continue
+                print(f'len of output:{len(output)}')
+                if len(output) == 5:
+                    ans = solve_slant(output)
+                    process.stdin.write(f'{ans}\n')
+                    process.stdin.flush()
+                    print('=======')
+                    print(process.stdout.readline())
+                if '#' in ''.join(output):
+                    ans = solve_banner(output)
+                    # out, _ = process.communicate(input=f'{ans}')
+                    process.stdin.write(f'{ans}\n')
+                    process.stdin.flush()
+                    print('=======')
+                    print(process.stdout.readline())
+                    # test = []
+                    # while True:
+                    #     out = process.stdout.readline()
+                    #     if out.strip():
+                    #         test.append(out)
+                    #         print(out, end='')
+                    #     else :
+                    #         break
+                    # print(test)
+                    # print('=======')
+                    # process.kill()
+                    # process.wait()
+                else:
+                    print("Restarting process...")
+                    process.kill()
+                    process.wait()
+                    break
         except Exception as e:
             print(f"Error: {e}")
             process.kill()
